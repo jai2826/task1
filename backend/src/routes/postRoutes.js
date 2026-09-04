@@ -1,13 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from 'express';
+import {
   getPosts,
   createPost,
   toggleLike,
   addComment,
-} = require('../controllers/postController');
-const { protect, optionalAuth } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+} from '../controllers/postController.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
+
+const router = express.Router();
 
 // Public feed (optionalAuth to determine likedByCurrentUser)
 router.get('/', optionalAuth, getPosts);
@@ -17,4 +18,4 @@ router.post('/', protect, upload.single('image'), createPost);
 router.post('/:id/like', protect, toggleLike);
 router.post('/:id/comment', protect, addComment);
 
-module.exports = router;
+export default router;

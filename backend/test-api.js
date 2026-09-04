@@ -1,8 +1,11 @@
-const mongoose = require('mongoose');
-const User = require('./src/models/User');
-const Post = require('./src/models/Post');
-const { uploadImageBuffer, isConfigured } = require('./src/config/cloudinary');
-const jwt = require('jsonwebtoken');
+import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import User from './src/models/User.js';
+import Post from './src/models/Post.js';
+import { uploadImageBuffer, isConfigured } from './src/config/blobStorage.js';
+
+dotenv.config();
 
 let passedTests = 0;
 let failedTests = 0;
@@ -89,7 +92,7 @@ async function runTests() {
   const imageOnlyPost = new Post({
     author: dummyAuthor,
     text: '',
-    imageUrl: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+    imageUrl: 'https://public.blob.vercel-storage.com/social_posts/sample.jpg',
   });
   const imageOnlyErr = imageOnlyPost.validateSync();
   assert(!imageOnlyErr, 'Accepts image-only post');
@@ -98,7 +101,7 @@ async function runTests() {
   const bothPost = new Post({
     author: dummyAuthor,
     text: 'A post with both text and photo!',
-    imageUrl: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+    imageUrl: 'https://public.blob.vercel-storage.com/social_posts/sample.jpg',
   });
   const bothErr = bothPost.validateSync();
   assert(!bothErr, 'Accepts post with both text and image');
@@ -136,14 +139,14 @@ async function runTests() {
     'Comments store username, text, and timestamp'
   );
 
-  // 5. Cloudinary Upload & Fallback Service
-  console.log('\n--- 5. Image Upload & Cloudinary Service ---');
+  // 5. Vercel Blob Upload & Fallback Service
+  console.log('\n--- 5. Image Upload & Vercel Blob Storage Service ---');
   try {
     const fakeBuffer = Buffer.from('mock image binary content');
     const uploadedUrl = await uploadImageBuffer(fakeBuffer, 'image/png');
     assert(
       typeof uploadedUrl === 'string' && uploadedUrl.length > 0,
-      'Image upload service returns valid URL (Cloudinary or local data URI fallback)'
+      'Image upload service returns valid URL (Vercel Blob or local data URI fallback)'
     );
   } catch (err) {
     console.error('Image upload test failed:', err);

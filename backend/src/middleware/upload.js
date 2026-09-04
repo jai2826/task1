@@ -1,4 +1,4 @@
-const multer = require('multer');
+import multer from 'multer';
 
 // Store file in memory to avoid writing to ephemeral disk
 const storage = multer.memoryStorage();
@@ -19,4 +19,4 @@ const upload = multer({
   fileFilter,
 });
 
-module.exports = upload;
+export default upload;

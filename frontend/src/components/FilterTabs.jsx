@@ -28,7 +28,7 @@ const FilterTabs = ({ currentSort, onSortChange }) => {
             key={tab.value}
             onClick={() => onSortChange(tab.value)}
             sx={{
-              borderRadius: 20,
+              borderRadius: 10, // reduced by 50%
               px: 2.2,
               py: 0.6,
               fontSize: '0.875rem',

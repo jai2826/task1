@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const LikeSchema = new mongoose.Schema(
   {
@@ -78,4 +78,4 @@ PostSchema.path('text').validate(function (value) {
 // Index for newest feed queries
 PostSchema.index({ createdAt: -1 });
 
-module.exports = mongoose.model('Post', PostSchema);
+export default mongoose.model('Post', PostSchema);

@@ -71,7 +71,7 @@ const CommentSection = ({ postId, comments = [], onCommentAdded, onOpenAuth }) =
   };
 
   return (
-    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid rgba(0, 0, 0, 0.06)' }}>
+    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid rgba(0, 0, 0, 0.06)',  }}>
       {/* Existing Comments List */}
       {comments.length > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, mb: 2 }}>
@@ -101,7 +101,7 @@ const CommentSection = ({ postId, comments = [], onCommentAdded, onOpenAuth }) =
                   bgcolor: '#f8fafc',
                   px: 1.5,
                   py: 1,
-                  borderRadius: 2.5,
+                  borderRadius: 1.25, // reduced by 50%
                   border: '1px solid rgba(0, 0, 0, 0.04)',
                 }}
               >
@@ -147,7 +147,7 @@ const CommentSection = ({ postId, comments = [], onCommentAdded, onOpenAuth }) =
           alignItems: 'center',
           gap: 1,
           bgcolor: '#f1f5f9',
-          borderRadius: 20,
+          borderRadius: 10, // reduced by 50%
           px: 1.5,
           py: 0.4,
         }}

@@ -92,7 +92,7 @@ const CreatePostCard = ({ onPostCreated, onOpenAuth }) => {
       id="create-post-card"
       sx={{
         backgroundColor: '#ffffff',
-        borderRadius: 4,
+        borderRadius: 2, // reduced by 50%
         boxShadow: '0 2px 12px rgba(0, 0, 0, 0.04)',
         border: '1px solid rgba(0, 0, 0, 0.06)',
         overflow: 'visible',
@@ -123,7 +123,7 @@ const CreatePostCard = ({ onPostCreated, onOpenAuth }) => {
             sx={{
               display: 'inline-flex',
               bgcolor: '#e5e7eb',
-              borderRadius: 20,
+              borderRadius: 10,
               p: 0.3,
             }}
           >
@@ -133,7 +133,7 @@ const CreatePostCard = ({ onPostCreated, onOpenAuth }) => {
                 color: '#ffffff',
                 px: 1.8,
                 py: 0.3,
-                borderRadius: 20,
+                borderRadius: 10,
                 fontSize: '0.75rem',
                 fontWeight: 600,
               }}
@@ -171,7 +171,7 @@ const CreatePostCard = ({ onPostCreated, onOpenAuth }) => {
               width: 'fit-content',
               maxWidth: '100%',
               mb: 1.5,
-              borderRadius: 2,
+              borderRadius: 1, // reduced by 50%
               overflow: 'hidden',
               border: '1px solid rgba(0, 0, 0, 0.1)',
             }}
@@ -185,7 +185,7 @@ const CreatePostCard = ({ onPostCreated, onOpenAuth }) => {
                 maxHeight: 200,
                 maxWidth: '100%',
                 objectFit: 'cover',
-                borderRadius: 2,
+                borderRadius: 1, // reduced by 50%
               }}
             />
             <IconButton
@@ -255,7 +255,7 @@ const CreatePostCard = ({ onPostCreated, onOpenAuth }) => {
               )
             }
             sx={{
-              borderRadius: 20,
+              borderRadius: 10, // reduced by 50%
               px: 3,
               py: 0.8,
               fontWeight: 600,

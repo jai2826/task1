@@ -84,7 +84,7 @@ const TopNavBar = ({ searchQuery, onSearchChange, onSearchSubmit, onOpenAuth }) 
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
               PaperProps={{
-                sx: { borderRadius: 2, mt: 1, minWidth: 160 },
+                sx: { borderRadius: 1, mt: 1, minWidth: 160 },
               }}
             >
               <MenuItem disabled sx={{ opacity: '1 !important' }}>
@@ -111,7 +111,7 @@ const TopNavBar = ({ searchQuery, onSearchChange, onSearchSubmit, onOpenAuth }) 
             color="primary"
             size="small"
             onClick={onOpenAuth}
-            sx={{ fontWeight: 600, borderRadius: 20 }}
+            sx={{ fontWeight: 600, borderRadius: 10 }}
           >
             Log In
           </Button>
@@ -129,7 +129,7 @@ const TopNavBar = ({ searchQuery, onSearchChange, onSearchSubmit, onOpenAuth }) 
           display: 'flex',
           alignItems: 'center',
           backgroundColor: '#ffffff',
-          borderRadius: 24,
+          borderRadius: 12, // reduced by 50% from 24
           px: 2,
           py: 0.5,
           border: '1px solid rgba(0, 0, 0, 0.08)',

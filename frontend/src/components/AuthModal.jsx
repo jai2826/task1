@@ -75,7 +75,7 @@ const AuthModal = ({ open, onClose, defaultTab = 0 }) => {
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 3,
+          borderRadius: 1.5,
           p: 1,
         },
       }}
@@ -98,7 +98,7 @@ const AuthModal = ({ open, onClose, defaultTab = 0 }) => {
 
       <DialogContent sx={{ pt: 3 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 1 }}>
             {error}
           </Alert>
         )}

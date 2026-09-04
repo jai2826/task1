@@ -96,7 +96,7 @@ const PostCard = ({ post, onOpenAuth }) => {
     <Card
       sx={{
         backgroundColor: '#ffffff',
-        borderRadius: 4,
+        borderRadius: 2, // reduced by 50%
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.03)',
         border: '1px solid rgba(0, 0, 0, 0.05)',
         transition: 'transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
@@ -154,7 +154,7 @@ const PostCard = ({ post, onOpenAuth }) => {
         {post.imageUrl && (
           <Box
             sx={{
-              borderRadius: 3,
+              borderRadius: 1.5, // reduced by 50%
               overflow: 'hidden',
               mb: 1.5,
               backgroundColor: '#f1f5f9',
@@ -201,7 +201,7 @@ const PostCard = ({ post, onOpenAuth }) => {
               )
             }
             sx={{
-              borderRadius: 20,
+              borderRadius: 10, // reduced by 50%
               px: 1.5,
               py: 0.5,
               color: liked ? '#ef4444' : '#64748b',
@@ -222,7 +222,7 @@ const PostCard = ({ post, onOpenAuth }) => {
             onClick={() => setShowComments((prev) => !prev)}
             startIcon={<ChatBubbleOutlineIcon sx={{ color: '#64748b' }} />}
             sx={{
-              borderRadius: 20,
+              borderRadius: 10, // reduced by 50%
               px: 1.5,
               py: 0.5,
               color: '#64748b',

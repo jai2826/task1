@@ -1,11 +1,11 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_jwt_secret_dev_only';
 
 /**
  * Required authentication middleware
  */
-const protect = (req, res, next) => {
+export const protect = (req, res, next) => {
   let token;
 
   if (
@@ -37,7 +37,7 @@ const protect = (req, res, next) => {
 /**
  * Optional authentication middleware for public routes like feed
  */
-const optionalAuth = (req, res, next) => {
+export const optionalAuth = (req, res, next) => {
   let token;
 
   if (
@@ -61,7 +61,7 @@ const optionalAuth = (req, res, next) => {
   next();
 };
 
-module.exports = {
+export default {
   protect,
   optionalAuth,
 };

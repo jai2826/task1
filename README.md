@@ -26,7 +26,7 @@ A responsive social feed web application replicating the **Social** tab from the
   - `posts`: Feed items with **embedded** `likes` (`[{ userId, username }]`) and `comments` (`[{ userId, username, text, createdAt }]`). No separate collections.
 - **Post Flexibility**: Accepts **text-only**, **image-only**, or **both text and image**. Rejects empty submissions.
 - **Optimistic UI Updates**: Liking, unliking, and commenting immediately update the UI state before network round-trips.
-- **Cloud Media Storage**: Direct stream uploads to **Cloudinary** (storing only HTTPS URLs in MongoDB; never ephemeral server disk).
+- **Cloud Media Storage**: Direct uploads to **Vercel Blob Storage** (`@vercel/blob`) (storing only HTTPS URLs in MongoDB; never ephemeral server disk).
 
 ---
 
@@ -34,7 +34,7 @@ A responsive social feed web application replicating the **Social** tab from the
 
 > [!TIP]
 > **Architecture & Language Choice Rationale**:
-> - **Specification Alignment**: The application is implemented in clean, modern JavaScript (ES6+ / React 18 / Node.js) to adhere strictly to the project specification (`02-tech-stack.md`), align seamlessly with the Material-UI design system, and ensure zero build/transpilation overhead or reviewer environment friction.
+> - **Specification Alignment**: The application is implemented in clean, modern JavaScript (ES Modules / React 18 / Node.js) to adhere strictly to the project specification (`02-tech-stack.md`), align seamlessly with the Material-UI design system, and ensure zero build/transpilation overhead or reviewer environment friction.
 > - **Code Quality & JSDoc Typing**: Modules and components feature consistent formatting, defensive validation, and structured JSDoc annotations to provide IDE type hinting and self-documenting code without adding runtime or compile-time complexity.
 > - **TypeScript Migration Readiness**: The codebase is modularly structured and architecturally primed for a direct TypeScript migration (`.ts`/`.tsx`). Data models (`users`, `posts`, `likes`, `comments`), API contracts, and context providers are cleanly decoupled with explicit schemas and prop flows, enabling full type definitions, interfaces, and strict compiler settings to be introduced without structural refactoring if the team decides to transition to static typing.
 
@@ -45,7 +45,7 @@ A responsive social feed web application replicating the **Social** tab from the
 | Layer | Technology |
 | :--- | :--- |
 | **Frontend** | React 18, Vite, Material UI (MUI v5), Emotion, Axios |
-| **Backend** | Node.js, Express.js, Mongoose, Multer, Cloudinary v2, JWT, bcryptjs |
+| **Backend** | Node.js (ES Modules), Express.js, Mongoose, Multer, Vercel Blob (`@vercel/blob`), JWT, bcryptjs |
 | **Database** | MongoDB (Atlas / local) |
 
 ---
@@ -58,7 +58,7 @@ d:/3w/task1/
 │   ├── src/
 │   │   ├── config/
 │   │   │   ├── db.js             # Mongoose connection handling
-│   │   │   └── cloudinary.js     # Cloudinary stream uploader & local fallback
+│   │   │   └── blobStorage.js    # Vercel Blob uploader, deletion & fallback service
 │   │   ├── controllers/
 │   │   │   ├── authController.js # Signup, login, profile (/me)
 │   │   │   └── postController.js # Feed, creation, like toggle, comment addition
@@ -113,9 +113,7 @@ d:/3w/task1/
 | `MONGO_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/dbname` |
 | `JWT_SECRET` | Secret key for JWT signing | `a_strong_secret_key` |
 | `CLIENT_URL` | Deployed frontend URL for CORS | `http://localhost:3000` or `https://app.vercel.app` |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud identifier | `your_cloud_name` |
-| `CLOUDINARY_API_KEY` | Cloudinary API access key | `1234567890` |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret | `abcdef123456` |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write access token | `vercel_blob_rw_...` |
 
 ### Frontend (`frontend/.env`)
 | Variable | Description | Example |
@@ -198,7 +196,7 @@ Base URL: `/api`
    - `MONGO_URI`
    - `JWT_SECRET`
    - `CLIENT_URL` (your deployed frontend URL)
-   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+   - `BLOB_READ_WRITE_TOKEN` (from Vercel Blob store)
    - `NODE_ENV` = `production`
 6. Click **Deploy Web Service**.
 

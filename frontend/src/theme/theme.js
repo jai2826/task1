@@ -43,13 +43,13 @@ const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 14,
+    borderRadius: 7, // reduced by 50% from 14
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 24,
+          borderRadius: 12, // reduced by 50% from 24
           padding: '8px 20px',
           boxShadow: 'none',
           '&:hover': {
@@ -61,7 +61,7 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 8, // reduced by 50% from 16
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
           border: '1px solid rgba(0, 0, 0, 0.06)',
         },
@@ -70,7 +70,7 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 20,
+          borderRadius: 10, // reduced by 50% from 20
           fontWeight: 500,
         },
       },

@@ -1,5 +1,5 @@
-const Post = require('../models/Post');
-const { uploadImageBuffer } = require('../config/cloudinary');
+import Post from '../models/Post.js';
+import { uploadImageBuffer } from '../config/blobStorage.js';
 
 // Helper to format post for response matching spec
 const formatPost = (post, currentUserId) => {
@@ -130,7 +130,8 @@ const createPost = async (req, res) => {
       imageUrl = await uploadImageBuffer(
         req.file.buffer,
         req.file.mimetype,
-        'social_posts'
+        'social_posts',
+        req.file.originalname
       );
     }
 
@@ -266,7 +267,7 @@ const addComment = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getPosts,
   createPost,
   toggleLike,

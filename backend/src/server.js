@@ -1,8 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+import connectDB from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
+import postRoutes from './routes/postRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -47,8 +49,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // Mount routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/posts', require('./routes/postRoutes'));
+app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -75,4 +77,5 @@ const server = app.listen(PORT, () => {
   console.log(`Backend server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });
 
-module.exports = { app, server };
+export { app, server };
+export default app;

@@ -103,7 +103,6 @@ const CreatePostCard = ({ onPostCreated, onOpenAuth }) => {
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'space-between',
             alignItems: 'center',
             mb: 1.5,
           }}
@@ -118,29 +117,6 @@ const CreatePostCard = ({ onPostCreated, onOpenAuth }) => {
           >
             Create Post
           </Typography>
-
-          <Box
-            sx={{
-              display: 'inline-flex',
-              bgcolor: '#e5e7eb',
-              borderRadius: 10,
-              p: 0.3,
-            }}
-          >
-            <Box
-              sx={{
-                bgcolor: 'primary.main',
-                color: '#ffffff',
-                px: 1.8,
-                py: 0.3,
-                borderRadius: 10,
-                fontSize: '0.75rem',
-                fontWeight: 600,
-              }}
-            >
-              All Posts
-            </Box>
-          </Box>
         </Box>
 
         {/* Text Input */}

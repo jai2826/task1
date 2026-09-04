@@ -15,6 +15,7 @@ import PostCard from './components/PostCard';
 import EmptyState from './components/EmptyState';
 import AuthModal from './components/AuthModal';
 import FloatingActionButton from './components/FloatingActionButton';
+import PullToRefresh from './components/PullToRefresh';
 import { useAuth } from './context/AuthContext';
 import api from './api/client';
 
@@ -37,9 +38,12 @@ function App() {
 
   // Fetch posts from API
   const fetchPosts = useCallback(
-    async (page = 1, append = false, currentSort = sort, search = activeSearch) => {
-      if (page === 1) setLoading(true);
-      else setLoadingMore(true);
+    async (page = 1, append = false, currentSort = sort, search = activeSearch, silent = false) => {
+      if (page === 1) {
+        if (!silent) setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
 
       try {
         const params = {
@@ -70,24 +74,53 @@ function App() {
     [sort, activeSearch]
   );
 
-  // Initial load & when sort or user changes
+  // Initial load & when user changes
   useEffect(() => {
     fetchPosts(1, false, sort, activeSearch);
-  }, [sort, activeSearch, user]);
+  }, [user]);
 
   const handleSortChange = (newSort) => {
-    if (newSort === sort) return;
     setSort(newSort);
-    // State effect will trigger fetchPosts
+    // Explicitly update and fetch fresh posts for the chosen tab
+    fetchPosts(1, false, newSort, activeSearch);
   };
 
   const handleSearchSubmit = () => {
     setActiveSearch(searchQuery.trim());
+    fetchPosts(1, false, sort, searchQuery.trim());
   };
 
   const handlePostCreated = (newPost) => {
-    setPosts((prev) => [newPost, ...prev]);
+    // Only when the active user creates a new post, switch tab to All Posts ('newest')
+    if (sort !== 'newest') {
+      setSort('newest');
+      fetchPosts(1, false, 'newest', activeSearch);
+    }
+    // Prepend new post to the top of the feed
+    setPosts((prev) => [newPost, ...prev.filter((p) => p._id !== newPost._id)]);
     setToastMessage('Post published successfully!');
+  };
+
+  const handlePostUpdated = (updatedPost) => {
+    setPosts((prev) =>
+      prev.map((p) => (p._id === updatedPost._id ? updatedPost : p))
+    );
+    setToastMessage('Post updated successfully!');
+  };
+
+  const handlePostDeleted = (deletedPostId) => {
+    setPosts((prev) => prev.filter((p) => p._id !== deletedPostId));
+    setToastMessage('Post deleted successfully!');
+  };
+
+  const handleProfileUpdated = (updatedUser) => {
+    setToastMessage(`Profile updated! Hello @${updatedUser.username}`);
+    fetchPosts(1, false, sort, activeSearch);
+  };
+
+  const handlePullRefresh = async () => {
+    // Preserves current sort and activeSearch strictly
+    await fetchPosts(1, false, sort, activeSearch, true);
   };
 
   const handleLoadMore = () => {
@@ -116,95 +149,100 @@ function App() {
           onSearchChange={setSearchQuery}
           onSearchSubmit={handleSearchSubmit}
           onOpenAuth={() => setAuthModalOpen(true)}
+          onProfileUpdated={handleProfileUpdated}
         />
 
-        {/* Create Post Composer */}
-        <Box sx={{ mt: 1, mb: 2 }}>
-          <CreatePostCard
-            onPostCreated={handlePostCreated}
-            onOpenAuth={() => setAuthModalOpen(true)}
-          />
-        </Box>
+        <PullToRefresh onRefresh={handlePullRefresh}>
+          {/* Create Post Composer */}
+          <Box sx={{ mt: 1, mb: 2 }}>
+            <CreatePostCard
+              onPostCreated={handlePostCreated}
+              onOpenAuth={() => setAuthModalOpen(true)}
+            />
+          </Box>
 
-        {/* Filter Pills (All Posts, Most Liked, Most Commented) */}
-        <Box sx={{ mb: 2 }}>
-          <FilterTabs currentSort={sort} onSortChange={handleSortChange} />
-        </Box>
+          {/* Filter Pills (All Posts, Most Liked, Most Commented) */}
+          <Box sx={{ mb: 2 }}>
+            <FilterTabs currentSort={sort} onSortChange={handleSortChange} />
+          </Box>
 
-        {/* Search status clear indicator if filtering */}
-        {activeSearch && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 2,
-              px: 1,
-            }}
-          >
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Showing results for "<strong>{activeSearch}</strong>"
-            </Typography>
-            <Button
-              size="small"
-              onClick={() => {
-                setSearchQuery('');
-                setActiveSearch('');
+          {/* Search status clear indicator if filtering */}
+          {activeSearch && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+                px: 1,
               }}
-              sx={{ fontSize: '0.8rem' }}
             >
-              Clear
-            </Button>
-          </Box>
-        )}
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Showing results for "<strong>{activeSearch}</strong>"
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveSearch('');
+                }}
+                sx={{ fontSize: '0.8rem' }}
+              >
+                Clear
+              </Button>
+            </Box>
+          )}
 
-        {/* Feed Posts List */}
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <CircularProgress size={36} color="primary" />
-          </Box>
-        ) : posts.length === 0 ? (
-          <EmptyState
-            message={
-              activeSearch
-                ? `No posts found matching "${activeSearch}"`
-                : 'Nothing here yet, check back soon!'
-            }
-          />
-        ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {posts.map((post) => (
-              <PostCard
-                key={post._id}
-                post={post}
-                onOpenAuth={() => setAuthModalOpen(true)}
-              />
-            ))}
+          {/* Feed Posts List */}
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+              <CircularProgress size={36} color="primary" />
+            </Box>
+          ) : posts.length === 0 ? (
+            <EmptyState
+              message={
+                activeSearch
+                  ? `No posts found matching "${activeSearch}"`
+                  : 'Nothing here yet, check back soon!'
+              }
+            />
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {posts.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  onOpenAuth={() => setAuthModalOpen(true)}
+                  onPostUpdated={handlePostUpdated}
+                  onPostDeleted={handlePostDeleted}
+                />
+              ))}
 
-            {/* Pagination / Load More */}
-            {pagination.hasMore && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2, pb: 4 }}>
-                <Button
-                  variant="outlined"
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  sx={{
-                    borderRadius: 20,
-                    px: 4,
-                    py: 0.8,
-                    fontWeight: 600,
-                  }}
-                >
-                  {loadingMore ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    'Load More Posts'
-                  )}
-                </Button>
-              </Box>
-            )}
-          </Box>
-        )}
+              {/* Pagination / Load More */}
+              {pagination.hasMore && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2, pb: 4 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    sx={{
+                      borderRadius: 20,
+                      px: 4,
+                      py: 0.8,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {loadingMore ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      'Load More Posts'
+                    )}
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
+        </PullToRefresh>
 
         {/* Floating Action Button */}
         <FloatingActionButton />

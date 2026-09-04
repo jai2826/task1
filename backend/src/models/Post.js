@@ -25,6 +25,10 @@ const CommentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  avatarUrl: {
+    type: String,
+    default: '',
+  },
   text: {
     type: String,
     required: [true, 'Comment text is required'],
@@ -47,6 +51,10 @@ const PostSchema = new mongoose.Schema(
       username: {
         type: String,
         required: true,
+      },
+      avatarUrl: {
+        type: String,
+        default: '',
       },
     },
     text: {

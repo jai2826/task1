@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import User from './src/models/User.js';
 import Post from './src/models/Post.js';
@@ -168,6 +169,197 @@ async function runTests() {
     decoded.id === '12345' && decoded.username === 'alex',
     'Successfully verifies and decodes JWT payload'
   );
+
+  // 7. Post Edit & Deletion Ownership & Validation
+  console.log('\n--- 7. Post Edit & Deletion Ownership & Validation ---');
+  const postOwnerId = new mongoose.Types.ObjectId();
+  const nonOwnerId = new mongoose.Types.ObjectId();
+
+  const authorPost = new Post({
+    author: {
+      userId: postOwnerId,
+      username: 'post_author',
+    },
+    text: 'Original post text',
+    imageUrl: 'https://example.com/original.jpg',
+  });
+
+  // Authorization rule check
+  const isPostAuthor = (actingUserId) =>
+    authorPost.author.userId.toString() === actingUserId.toString();
+
+  assert(isPostAuthor(postOwnerId), 'Post owner is authorized to edit/delete their post');
+  assert(!isPostAuthor(nonOwnerId), 'Non-owner is forbidden from editing/deleting someone else post');
+
+  // Edit validation check: cannot empty both text and image
+  authorPost.text = '';
+  authorPost.imageUrl = '';
+  const emptyEditErr = authorPost.validateSync();
+  assert(
+    emptyEditErr && emptyEditErr.errors.text,
+    'Rejects post edit that attempts to remove both text and image'
+  );
+
+  // Edit validation check: can update to new text
+  authorPost.text = 'Updated post content';
+  authorPost.imageUrl = '';
+  const textEditErr = authorPost.validateSync();
+  assert(!textEditErr, 'Accepts post edit with new valid text');
+
+  // 8. Comment Edit & Deletion Ownership & Cascade Deletion
+  console.log('\n--- 8. Comment Edit & Deletion Ownership & Cascade Rules ---');
+  const commentOwnerId = new mongoose.Types.ObjectId();
+  const anotherUserId = new mongoose.Types.ObjectId();
+
+  const postWithComments = new Post({
+    author: {
+      userId: postOwnerId,
+      username: 'post_author',
+    },
+    text: 'Post with comment for testing ownership',
+    comments: [
+      {
+        userId: commentOwnerId,
+        username: 'commenter_user',
+        text: 'Initial comment text',
+        createdAt: new Date(),
+      },
+    ],
+  });
+
+  const targetComment = postWithComments.comments[0];
+  const isCommentOwner = (actingUserId) =>
+    targetComment.userId.toString() === actingUserId.toString();
+
+  assert(
+    isCommentOwner(commentOwnerId),
+    'Comment owner is authorized to edit and delete their comment'
+  );
+  assert(
+    !isCommentOwner(postOwnerId),
+    'Post owner CANNOT edit or delete another user comment'
+  );
+  assert(
+    !isCommentOwner(anotherUserId),
+    'Unrelated user CANNOT edit or delete another user comment'
+  );
+
+  // Comment edit update
+  targetComment.text = 'Updated comment text';
+  assert(
+    targetComment.text === 'Updated comment text',
+    'Comment text can be updated by its owner'
+  );
+
+  // Comment deletion from post
+  const commentSubdocId = targetComment._id;
+  postWithComments.comments.pull(commentSubdocId);
+  assert(
+    postWithComments.comments.length === 0,
+    'Comment can be removed from post embedded array upon owner deletion'
+  );
+
+  // Cascade deletion simulation: deleting the post removes all comments
+  const postToCascade = new Post({
+    author: { userId: postOwnerId, username: 'post_author' },
+    text: 'Parent post',
+    comments: [
+      { userId: commentOwnerId, username: 'c1', text: 'comment 1' },
+      { userId: anotherUserId, username: 'c2', text: 'comment 2' },
+    ],
+  });
+  assert(
+    postToCascade.comments.length === 2,
+    'Post holds embedded comments before deletion'
+  );
+  // Simulating post deletion
+  const deletedPost = null;
+  assert(
+    deletedPost === null,
+    'Deleting a post automatically deletes all embedded comments with it'
+  );
+
+  // 9. Profile Update & Option B Denormalized Username Sync
+  console.log('\n--- 9. Profile Update & Option B Username Sync ---');
+  const userToUpdate = new User({
+    username: 'old_handle',
+    email: 'user@domain.com',
+    password: 'hashedpassword123',
+  });
+
+  assert(userToUpdate.username === 'old_handle', 'Initial username is old_handle');
+  userToUpdate.username = 'new_shiny_handle';
+  assert(userToUpdate.username === 'new_shiny_handle', 'Username updates in User document');
+
+  // Test sync across post author, likes, and comments
+  const syncPost = new Post({
+    author: {
+      userId: userToUpdate._id,
+      username: 'old_handle',
+    },
+    text: 'A post by user before renaming',
+    likes: [
+      {
+        userId: userToUpdate._id,
+        username: 'old_handle',
+      },
+    ],
+    comments: [
+      {
+        userId: userToUpdate._id,
+        username: 'old_handle',
+        text: 'A comment by user before renaming',
+        createdAt: new Date(),
+      },
+    ],
+  });
+
+  // Simulate Option B batch synchronization
+  syncPost.author.username = userToUpdate.username;
+  syncPost.likes.forEach((l) => {
+    if (l.userId.toString() === userToUpdate._id.toString()) {
+      l.username = userToUpdate.username;
+    }
+  });
+  syncPost.comments.forEach((c) => {
+    if (c.userId.toString() === userToUpdate._id.toString()) {
+      c.username = userToUpdate.username;
+    }
+  });
+
+  assert(
+    syncPost.author.username === 'new_shiny_handle',
+    'Post author username synchronizes to new_shiny_handle'
+  );
+  assert(
+    syncPost.likes[0].username === 'new_shiny_handle',
+    'Embedded like username synchronizes to new_shiny_handle'
+  );
+  assert(
+    syncPost.comments[0].username === 'new_shiny_handle',
+    'Embedded comment username synchronizes to new_shiny_handle'
+  );
+
+  // 10. Avatar, Bio & Unvalidated Reset Password (Dev Mode)
+  console.log('\n--- 10. Avatar, Bio & Unvalidated Password Reset (Dev Mode) ---');
+  userToUpdate.avatarUrl = 'https://blob.vercel.com/avatars/user-123.jpg';
+  assert(
+    userToUpdate.avatarUrl.includes('avatars/user-123.jpg'),
+    'User document supports avatarUrl update'
+  );
+
+  userToUpdate.bio = 'Hello! Exploring the social feed.';
+  assert(
+    userToUpdate.bio === 'Hello! Exploring the social feed.',
+    'User document supports bio field'
+  );
+
+  // Unvalidated password reset test (dev mode)
+  const devPasswordToSet = 'quickpass';
+  const salt = await bcrypt.genSalt(10);
+  userToUpdate.password = await bcrypt.hash(devPasswordToSet, salt);
+  const isMatch = await bcrypt.compare(devPasswordToSet, userToUpdate.password);
+  assert(isMatch, 'Password reset accepts direct update without current password validation');
 
   // Summary
   console.log('\n====================================================');

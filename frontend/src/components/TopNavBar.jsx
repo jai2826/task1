@@ -14,11 +14,16 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import Divider from '@mui/material/Divider';
 import { useAuth } from '../context/AuthContext';
+import SettingsModal from './SettingsModal';
+import { getAvatarGradient } from '../utils/avatar';
 
-const TopNavBar = ({ searchQuery, onSearchChange, onSearchSubmit, onOpenAuth }) => {
+const TopNavBar = ({ searchQuery, onSearchChange, onSearchSubmit, onOpenAuth, onProfileUpdated }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleMenuOpen = (e) => {
     if (isAuthenticated) {
@@ -67,13 +72,14 @@ const TopNavBar = ({ searchQuery, onSearchChange, onSearchSubmit, onOpenAuth }) 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
               <Avatar
+                src={user?.avatarUrl || undefined}
                 sx={{
-                  bgcolor: '#f59e0b',
-                  background: 'linear-gradient(135deg, #f59e0b 0%, #8b5cf6 100%)',
+                  background: getAvatarGradient(user?.username || user?.id),
                   width: 38,
                   height: 38,
                   fontWeight: 600,
                   fontSize: '0.95rem',
+                  color: '#ffffff',
                 }}
               >
                 {user?.username ? user.username.charAt(0).toUpperCase() : <PersonIcon />}
@@ -84,18 +90,59 @@ const TopNavBar = ({ searchQuery, onSearchChange, onSearchSubmit, onOpenAuth }) 
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
               PaperProps={{
-                sx: { borderRadius: 1, mt: 1, minWidth: 160 },
+                sx: { borderRadius: 1.5, mt: 1, minWidth: 190 },
               }}
             >
               <MenuItem disabled sx={{ opacity: '1 !important' }}>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    @{user?.username}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {user?.email}
-                  </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                  <Avatar
+                    src={user?.avatarUrl || undefined}
+                    sx={{
+                      width: 34,
+                      height: 34,
+                      fontSize: '0.85rem',
+                      background: getAvatarGradient(user?.username || user?.id),
+                      color: '#ffffff',
+                    }}
+                  >
+                    {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                      @{user?.username}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                      {user?.email}
+                    </Typography>
+                    {user?.bio && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: '#64748b',
+                          display: 'block',
+                          maxWidth: 160,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {user.bio}
+                      </Typography>
+                    )}
+                  </Box>
                 </Box>
+              </MenuItem>
+              <Divider sx={{ my: 0.5 }} />
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  setSettingsOpen(true);
+                }}
+              >
+                <ListItemIcon sx={{ color: 'text.primary' }}>
+                  <SettingsOutlinedIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Settings" />
               </MenuItem>
               <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
                 <ListItemIcon sx={{ color: 'error.main' }}>
@@ -104,6 +151,13 @@ const TopNavBar = ({ searchQuery, onSearchChange, onSearchSubmit, onOpenAuth }) 
                 <ListItemText primary="Log Out" />
               </MenuItem>
             </Menu>
+
+            {/* Account Settings Dialog */}
+            <SettingsModal
+              open={settingsOpen}
+              onClose={() => setSettingsOpen(false)}
+              onProfileUpdated={onProfileUpdated}
+            />
           </Box>
         ) : (
           <Button

@@ -30,6 +30,12 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    bio: {
+      type: String,
+      trim: true,
+      default: '',
+      maxlength: [160, 'Bio cannot exceed 160 characters'],
+    },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

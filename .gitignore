@@ -25,6 +25,8 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+.vercel/
+*/.vercel/
 
 # Reference Files & Folders (Local only)
 reference/

@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1877F2', // TaskPlanet vibrant blue
+      main: '#1877F2', // Primary vibrant blue
       light: '#4294ff',
       dark: '#0e5fca',
       contrastText: '#ffffff',

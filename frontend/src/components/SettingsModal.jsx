@@ -23,8 +23,24 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 
+const PROTECTED_DEMO_ACCOUNTS = [
+  'sophia.codes@example.com',
+  'marcus.dev@example.com',
+  'elena.design@example.com',
+  'sophia_codes',
+  'marcus_dev',
+  'elena_design',
+];
+
 const SettingsModal = ({ open, onClose, onProfileUpdated }) => {
   const { user, updateUser } = useAuth();
+
+  const isProtectedDemoAccount = Boolean(
+    user && (
+      PROTECTED_DEMO_ACCOUNTS.includes(user.email?.toLowerCase()) ||
+      PROTECTED_DEMO_ACCOUNTS.includes(user.username?.toLowerCase())
+    )
+  );
 
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -102,8 +118,13 @@ const SettingsModal = ({ open, onClose, onProfileUpdated }) => {
       formData.append('email', trimmedEmail);
       formData.append('bio', bio.trim());
 
-      // Password reset without validation (dev mode)
+      // Password reset without validation (dev mode, disabled on demo accounts)
       if (resetPassword) {
+        if (isProtectedDemoAccount) {
+          setError('Password changes are disabled for this demo account. Please create a new account to test password changes.');
+          setLoading(false);
+          return;
+        }
         formData.append('resetPassword', resetPassword);
       }
 
@@ -304,40 +325,55 @@ const SettingsModal = ({ open, onClose, onProfileUpdated }) => {
 
         <Divider sx={{ my: 2 }} />
 
-        {/* 3. Reset Password Section (Unvalidated in Dev Mode) */}
+        {/* 3. Reset Password Section */}
         <Box sx={{ mb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <LockResetIcon fontSize="small" sx={{ color: 'primary.main' }} />
+            <LockResetIcon fontSize="small" sx={{ color: isProtectedDemoAccount ? '#94a3b8' : 'primary.main' }} />
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
               Reset Password
             </Typography>
           </Box>
 
-          {/* Dev Mode Notification Alert */}
-          <Alert
-            severity="info"
-            icon={<InfoOutlinedIcon fontSize="small" />}
-            sx={{
-              mb: 1.5,
-              borderRadius: 1.5,
-              fontSize: '0.78rem',
-              py: 0.3,
-              '& .MuiAlert-message': { p: 0.3 },
-            }}
-          >
-            <strong>Development Mode:</strong> Password reset operates directly without validation (no current password or minimum length checks required). Strict validation can be added for production.
-          </Alert>
+          {isProtectedDemoAccount ? (
+            <Alert
+              severity="warning"
+              icon={<InfoOutlinedIcon fontSize="small" />}
+              sx={{
+                mb: 1.5,
+                borderRadius: 1.5,
+                fontSize: '0.8rem',
+                py: 0.6,
+                '& .MuiAlert-message': { p: 0.2 },
+              }}
+            >
+              <strong>Demo Account Protected:</strong> You cannot change the password of this shared demo account (<code>{user?.username}</code>). Please create a new account to test password changes and settings.
+            </Alert>
+          ) : (
+            <Alert
+              severity="info"
+              icon={<InfoOutlinedIcon fontSize="small" />}
+              sx={{
+                mb: 1.5,
+                borderRadius: 1.5,
+                fontSize: '0.78rem',
+                py: 0.3,
+                '& .MuiAlert-message': { p: 0.3 },
+              }}
+            >
+              <strong>Development Mode:</strong> Password reset operates directly without validation (no current password or minimum length checks required). Strict validation can be added for production.
+            </Alert>
+          )}
 
           <TextField
-            label="New Password (Direct Reset)"
+            label="New Password"
             type="password"
             fullWidth
             size="small"
-            placeholder="Enter any new password to reset directly"
+            placeholder={isProtectedDemoAccount ? "Password reset is locked for this demo account" : "Enter any new password to reset directly"}
             value={resetPassword}
             onChange={(e) => setResetPassword(e.target.value)}
-            disabled={loading}
-            helperText="Leave empty if you do not wish to change your password"
+            disabled={loading || isProtectedDemoAccount}
+            helperText={isProtectedDemoAccount ? "Password change disabled to ensure shared access remains active for all users." : "Leave empty if you do not wish to change your password"}
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
           />
         </Box>

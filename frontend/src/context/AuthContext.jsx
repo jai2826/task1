@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
-  // Validate session on mount
+  // Check if user is already logged in
   useEffect(() => {
     const checkAuth = async () => {
       const storedToken = localStorage.getItem('token');

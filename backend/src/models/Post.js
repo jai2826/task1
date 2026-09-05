@@ -76,14 +76,14 @@ const PostSchema = new mongoose.Schema(
   }
 );
 
-// Custom validation: At least one of text or imageUrl must be present
+// Require either text or an image
 PostSchema.path('text').validate(function (value) {
   const hasText = Boolean(value && value.trim().length > 0);
   const hasImage = Boolean(this.imageUrl && this.imageUrl.trim().length > 0);
   return hasText || hasImage;
 }, 'Post must contain at least text or an image. Both cannot be empty.');
 
-// Index for newest feed queries
+// Sort newest posts first
 PostSchema.index({ createdAt: -1 });
 
 export default mongoose.model('Post', PostSchema);

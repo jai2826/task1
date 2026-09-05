@@ -1,7 +1,4 @@
-/**
- * Dynamic gradient generator for avatars when no profile picture is set.
- * Returns a deterministic, vibrant gradient based on the username or user ID.
- */
+// Gradient colors for users without a profile picture
 const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', // Blue
   'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', // Purple

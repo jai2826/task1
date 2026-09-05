@@ -7,7 +7,7 @@ const api = axios.create({
   },
 });
 
-// Attach JWT token automatically
+// Attach auth token to outgoing requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -19,7 +19,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for handling 401s
+// Clear stored user if session expires (401)
 api.interceptors.response.use(
   (response) => response,
   (error) => {

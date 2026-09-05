@@ -2,17 +2,12 @@ import { put, del } from '@vercel/blob';
 import path from 'path';
 import crypto from 'crypto';
 
-/**
- * Check if Vercel Blob storage is configured via environment variables
- * @returns {boolean}
- */
+// Check if Vercel blob storage token is configured
 export const isConfigured = () => {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 };
 
-/**
- * Map common image MIME types to standard file extensions
- */
+// Common file extensions for image mime types
 const MIME_EXTENSION_MAP = {
   'image/jpeg': 'jpg',
   'image/jpg': 'jpg',
@@ -22,16 +17,7 @@ const MIME_EXTENSION_MAP = {
   'image/svg+xml': 'svg',
 };
 
-/**
- * Upload an image buffer to Vercel Blob storage
- * Falls back to base64 Data URI if BLOB_READ_WRITE_TOKEN is not configured (e.g. offline testing)
- *
- * @param {Buffer} buffer - File buffer from Multer
- * @param {string} mimeType - File mimetype (e.g. 'image/jpeg')
- * @param {string} folder - Storage folder prefix (e.g. 'social_posts')
- * @param {string} originalName - Original file name if provided
- * @returns {Promise<string>} - The public HTTPS URL of the uploaded image
- */
+// Upload an image to Vercel Blob (or fallback to base64 for local dev)
 export const uploadImageBuffer = async (
   buffer,
   mimeType = 'image/jpeg',
@@ -62,11 +48,7 @@ export const uploadImageBuffer = async (
   }
 };
 
-/**
- * Delete an image from Vercel Blob storage by its URL
- * @param {string} url - The blob URL to delete
- * @returns {Promise<void>}
- */
+// Delete an image from Vercel Blob storage
 export const deleteImage = async (url) => {
   if (!isConfigured() || !url || !url.startsWith('http')) {
     return;

@@ -1,8 +1,9 @@
+import mongoose from 'mongoose';
 import Post from '../models/Post.js';
 import User from '../models/User.js';
 import { uploadImageBuffer, deleteImage } from '../config/blobStorage.js';
 
-// Helper to format post for response matching spec
+// Format post data for the frontend
 const formatPost = (post, currentUserId) => {
   const postObj = post.toObject ? post.toObject() : post;
   const likedByCurrentUser = currentUserId
@@ -48,9 +49,7 @@ const formatPost = (post, currentUserId) => {
   };
 };
 
-// @desc    Get paginated feed of posts
-// @route   GET /api/posts
-// @access  Public (optional auth for likedByCurrentUser)
+// Get feed posts (pagination, search, sorting)
 const getPosts = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
@@ -68,6 +67,17 @@ const getPosts = async (req, res) => {
         { text: { $regex: search, $options: 'i' } },
         { 'author.username': { $regex: search, $options: 'i' } },
       ];
+    }
+
+    // Filter to only posts created by the user
+    if (sort === 'myPosts' || req.query.myPosts === 'true') {
+      if (!currentUserId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Please log in to view your posts',
+        });
+      }
+      matchFilter['author.userId'] = new mongoose.Types.ObjectId(currentUserId);
     }
 
     if (sort === 'mostLiked' || sort === 'mostCommented') {
@@ -148,9 +158,7 @@ const getPosts = async (req, res) => {
   }
 };
 
-// @desc    Create a new post
-// @route   POST /api/posts
-// @access  Private
+// Create a new post
 const createPost = async (req, res) => {
   try {
     const text = req.body.text ? req.body.text.trim() : '';
@@ -199,9 +207,7 @@ const createPost = async (req, res) => {
   }
 };
 
-// @desc    Toggle like / unlike on a post
-// @route   POST /api/posts/:id/like
-// @access  Private
+// Like or unlike a post
 const toggleLike = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -249,9 +255,7 @@ const toggleLike = async (req, res) => {
   }
 };
 
-// @desc    Add a comment to a post
-// @route   POST /api/posts/:id/comment
-// @access  Private
+// Add a comment to a post
 const addComment = async (req, res) => {
   try {
     const { text } = req.body;
@@ -310,9 +314,7 @@ const addComment = async (req, res) => {
   }
 };
 
-// @desc    Update a post (only author)
-// @route   PUT /api/posts/:id
-// @access  Private
+// Edit a post (author only)
 const updatePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -385,9 +387,7 @@ const updatePost = async (req, res) => {
   }
 };
 
-// @desc    Delete a post (only author)
-// @route   DELETE /api/posts/:id
-// @access  Private
+// Delete a post (author only)
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -399,7 +399,7 @@ const deletePost = async (req, res) => {
       });
     }
 
-    // Authorization: Only author can delete
+    // Only author can delete
     if (post.author.userId.toString() !== req.user.id.toString()) {
       return res.status(403).json({
         success: false,
@@ -428,9 +428,7 @@ const deletePost = async (req, res) => {
   }
 };
 
-// @desc    Update a comment (only comment owner)
-// @route   PUT /api/posts/:postId/comments/:commentId
-// @access  Private
+// Edit a comment (author only)
 const updateComment = async (req, res) => {
   try {
     const { text } = req.body;
@@ -460,7 +458,7 @@ const updateComment = async (req, res) => {
       });
     }
 
-    // Authorization: Strictly the comment owner (post owner has NO right to edit another's comment)
+    // Only the comment owner can edit
     if (comment.userId.toString() !== req.user.id.toString()) {
       return res.status(403).json({
         success: false,
@@ -486,9 +484,7 @@ const updateComment = async (req, res) => {
   }
 };
 
-// @desc    Delete a comment (only comment owner)
-// @route   DELETE /api/posts/:postId/comments/:commentId
-// @access  Private
+// Delete a comment (author only)
 const deleteComment = async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);

@@ -6,6 +6,7 @@ const FilterTabs = ({ currentSort, onSortChange }) => {
     { label: 'All Posts', value: 'newest' },
     { label: 'Most Liked', value: 'mostLiked' },
     { label: 'Most Commented', value: 'mostCommented' },
+    { label: 'My Posts', value: 'myPosts' },
   ];
 
   return (

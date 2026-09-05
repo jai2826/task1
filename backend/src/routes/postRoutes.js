@@ -14,16 +14,16 @@ import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
-// Public feed (optionalAuth to determine likedByCurrentUser)
+// Feed route (works for guests and logged-in users)
 router.get('/', optionalAuth, getPosts);
 
-// Protected post routes
+// Post actions
 router.post('/', protect, upload.single('image'), createPost);
 router.put('/:id', protect, upload.single('image'), updatePost);
 router.delete('/:id', protect, deletePost);
 router.post('/:id/like', protect, toggleLike);
 
-// Protected comment routes
+// Comment actions
 router.post('/:id/comment', protect, addComment);
 router.put('/:postId/comments/:commentId', protect, updateComment);
 router.delete('/:postId/comments/:commentId', protect, deleteComment);

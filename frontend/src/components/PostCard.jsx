@@ -55,20 +55,20 @@ const PostCard = ({ post, onOpenAuth, onPostUpdated, onPostDeleted }) => {
   const [showComments, setShowComments] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
 
-  // Author Actions State
+  // Edit and delete menu states
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Check if active user is post author
+  // Check if current user wrote this post
   const isAuthor = Boolean(
     user &&
     post.author?.userId &&
     (user._id === post.author.userId || user.id === post.author.userId)
   );
 
-  // Sync state if post prop changes
+  // Keep state in sync with post prop
   React.useEffect(() => {
     setLiked(post.likedByCurrentUser || false);
     setLikeCount(post.likeCount || 0);
@@ -84,7 +84,7 @@ const PostCard = ({ post, onOpenAuth, onPostUpdated, onPostDeleted }) => {
 
     if (likeLoading) return;
 
-    // Optimistic Update
+    // Update count immediately on screen
     const prevLiked = liked;
     const prevCount = likeCount;
 
@@ -103,7 +103,7 @@ const PostCard = ({ post, onOpenAuth, onPostUpdated, onPostDeleted }) => {
       }
     } catch (err) {
       console.error('Like toggle failed:', err);
-      // Revert on error
+      // Revert if request fails
       setLiked(prevLiked);
       setLikeCount(prevCount);
     } finally {

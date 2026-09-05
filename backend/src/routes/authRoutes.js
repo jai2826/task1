@@ -5,8 +5,11 @@ import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
+// Public auth routes
 router.post('/signup', signup);
 router.post('/login', login);
+
+// Protected user routes
 router.get('/me', protect, getMe);
 router.put('/profile', protect, upload.single('avatar'), updateProfile);
 

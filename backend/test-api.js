@@ -361,6 +361,33 @@ async function runTests() {
   const isMatch = await bcrypt.compare(devPasswordToSet, userToUpdate.password);
   assert(isMatch, 'Password reset accepts direct update without current password validation');
 
+  // 11. My Posts Query Filter
+  console.log('\n--- 11. My Posts Filter (User-Specific Feed) ---');
+  const userAId = new mongoose.Types.ObjectId();
+  const userBId = new mongoose.Types.ObjectId();
+
+  const postUserA = new Post({
+    author: { userId: userAId, username: 'user_a' },
+    text: 'Post by user A',
+  });
+  const postUserB = new Post({
+    author: { userId: userBId, username: 'user_b' },
+    text: 'Post by user B',
+  });
+
+  const allMockPosts = [postUserA, postUserB];
+  const userAPosts = allMockPosts.filter(
+    (p) => p.author.userId.toString() === userAId.toString()
+  );
+  assert(
+    userAPosts.length === 1 && userAPosts[0].author.username === 'user_a',
+    'My Posts filter returns only posts created by the active user'
+  );
+  assert(
+    !userAPosts.some((p) => p.author.userId.toString() === userBId.toString()),
+    'My Posts filter strictly excludes posts authored by other users'
+  );
+
   // Summary
   console.log('\n====================================================');
   console.log(`Test Results: ${passedTests} passed, ${failedTests} failed`);

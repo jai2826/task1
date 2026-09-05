@@ -18,9 +18,7 @@ const generateToken = (user) => {
   );
 };
 
-// @desc    Register new user
-// @route   POST /api/auth/signup
-// @access  Public
+// Register a new user
 const signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -89,9 +87,7 @@ const signup = async (req, res) => {
   }
 };
 
-// @desc    Authenticate user & get token
-// @route   POST /api/auth/login
-// @access  Public
+// Log in user and return token
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -141,9 +137,7 @@ const login = async (req, res) => {
   }
 };
 
-// @desc    Get current user profile
-// @route   GET /api/auth/me
-// @access  Private
+// Get current logged-in user profile
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
@@ -173,9 +167,7 @@ const getMe = async (req, res) => {
   }
 };
 
-// @desc    Update current user profile / settings
-// @route   PUT /api/auth/profile
-// @access  Private
+// Update user profile settings
 const updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -190,9 +182,26 @@ const updateProfile = async (req, res) => {
     let usernameChanged = false;
     let newUsername = user.username;
 
-    // 1. Reset Password without any validation (dev mode per user request)
+    // Prevent password changes on public demo accounts
     const passwordToSet = resetPassword || newPassword;
     if (passwordToSet) {
+      const isProtectedDemo = [
+        'sophia.codes@example.com',
+        'marcus.dev@example.com',
+        'elena.design@example.com',
+      ].includes(user.email.toLowerCase()) || [
+        'sophia_codes',
+        'marcus_dev',
+        'elena_design',
+      ].includes(user.username.toLowerCase());
+
+      if (isProtectedDemo) {
+        return res.status(403).json({
+          success: false,
+          message: 'Password reset is disabled for this public demo account. Please create a new account to test password changes.',
+        });
+      }
+
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(passwordToSet, salt);
     }
@@ -268,7 +277,7 @@ const updateProfile = async (req, res) => {
     const token = generateToken(user);
     const userId = user._id;
 
-    // Send HTTP 200 response immediately so UI never blocks
+    // Return updated user data
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
@@ -282,7 +291,7 @@ const updateProfile = async (req, res) => {
       },
     });
 
-    // Non-blocking background sync across posts, likes, and comments (Option B)
+    // Update username/avatar on existing posts and comments in the background
     if (usernameChanged || req.file || removeAvatar) {
       setImmediate(async () => {
         try {

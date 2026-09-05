@@ -2,9 +2,7 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_jwt_secret_dev_only';
 
-/**
- * Required authentication middleware
- */
+// Require login for protected routes
 export const protect = (req, res, next) => {
   let token;
 
@@ -34,9 +32,7 @@ export const protect = (req, res, next) => {
   }
 };
 
-/**
- * Optional authentication middleware for public routes like feed
- */
+// Check login status if token exists, but allow guests through
 export const optionalAuth = (req, res, next) => {
   let token;
 

@@ -76,12 +76,22 @@ function App() {
 
   // Initial load & when user changes
   useEffect(() => {
-    fetchPosts(1, false, sort, activeSearch);
+    // If user logged out while on 'myPosts', reset to 'newest'
+    if (!user && sort === 'myPosts') {
+      setSort('newest');
+      fetchPosts(1, false, 'newest', activeSearch);
+    } else {
+      fetchPosts(1, false, sort, activeSearch);
+    }
   }, [user]);
 
   const handleSortChange = (newSort) => {
+    // If guest clicks My Posts, open login modal
+    if (newSort === 'myPosts' && !user) {
+      setAuthModalOpen(true);
+      return;
+    }
     setSort(newSort);
-    // Explicitly update and fetch fresh posts for the chosen tab
     fetchPosts(1, false, newSort, activeSearch);
   };
 
@@ -91,8 +101,8 @@ function App() {
   };
 
   const handlePostCreated = (newPost) => {
-    // Only when the active user creates a new post, switch tab to All Posts ('newest')
-    if (sort !== 'newest') {
+    // Switch to newest if on mostLiked/mostCommented
+    if (sort !== 'newest' && sort !== 'myPosts') {
       setSort('newest');
       fetchPosts(1, false, 'newest', activeSearch);
     }
@@ -201,7 +211,9 @@ function App() {
           ) : posts.length === 0 ? (
             <EmptyState
               message={
-                activeSearch
+                sort === 'myPosts'
+                  ? "You haven't shared any posts yet. Create your first post above!"
+                  : activeSearch
                   ? `No posts found matching "${activeSearch}"`
                   : 'Nothing here yet, check back soon!'
               }

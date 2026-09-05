@@ -16,8 +16,6 @@ import {
 import SendIcon from '@mui/icons-material/Send';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from '../context/AuthContext';
 import { getAvatarGradient } from '../utils/avatar';
 import api from '../api/client';

@@ -14,7 +14,6 @@ import FilterTabs from './components/FilterTabs';
 import PostCard from './components/PostCard';
 import EmptyState from './components/EmptyState';
 import AuthModal from './components/AuthModal';
-import FloatingActionButton from './components/FloatingActionButton';
 import PullToRefresh from './components/PullToRefresh';
 import { useAuth } from './context/AuthContext';
 import api from './api/client';
@@ -195,6 +194,7 @@ function App() {
                 onClick={() => {
                   setSearchQuery('');
                   setActiveSearch('');
+                  fetchPosts(1, false, sort, '');
                 }}
                 sx={{ fontSize: '0.8rem' }}
               >
@@ -255,9 +255,6 @@ function App() {
             </Box>
           )}
         </PullToRefresh>
-
-        {/* Floating Action Button */}
-        <FloatingActionButton />
 
         {/* Authentication Modal */}
         <AuthModal

@@ -1,5 +1,5 @@
 /**
- * Automated Live API Test Suite for TaskPlanet Social Feed Backend
+ * Automated Live API Test Suite for Social Feed Backend
  * Tests the live Render deployment: https://task1-ay9p.onrender.com
  */
 
